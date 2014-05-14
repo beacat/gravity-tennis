@@ -1,0 +1,95 @@
+<head>
+    <title>A funny little game</title>
+    <script type="text/javascript" src="js/phaser.min.js"></script>
+</head>
+<body>
+HEY GUYS ITS GRAVITY TENNIS
+<div/>
+<script type="text/javascript">
+var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+
+function preload() {
+    game.load.image('p1', 'assets/p1.png');
+    game.load.image('p2', 'assets/p2.png');
+    game.load.image('ball', 'assets/ball.png');
+}
+
+var p1;
+var p2;
+var ball;
+var p1Keys;
+var p2Keys;
+
+function create() {
+    game.physics.startSystem(Phaser.Physics.ARCADE);
+
+    p1 = game.add.sprite(game.world.width/4, game.world.height/2, 'p1');
+    p2 = game.add.sprite(3 * game.world.width/4, game.world.height/2, 'p2');
+    ball = game.add.sprite(game.world.width/2, game.world.height/2, 'ball');
+    game.physics.arcade.enable(p1);
+    game.physics.arcade.enable(p2);
+    game.physics.arcade.enable(ball);
+
+    p1.body.collideWorldBounds = true;
+    p2.body.collideWorldBounds = true;
+    ball.body.collideWorldBounds = true;
+    ball.body.bounce = new Phaser.Point(0.0, 1.0);
+    ball.body.maxVelocity = new Phaser.Point(1000., 1000.);
+
+    p1Keys = game.input.keyboard.createCursorKeys();
+    p2Keys = createWASDKeys(game.input.keyboard);
+}
+
+function update() {
+
+    p1.body.velocity = getDirection(p1Keys).multiply(150, 150);
+    p2.body.velocity = getDirection(p2Keys).multiply(150, 150);
+
+    var g1 = getGravity(p1.body.position, ball.body.position);
+    var g2 = getGravity(p2.body.position, ball.body.position);
+    ball.body.gravity = Phaser.Point.add(g1, g2);
+}
+
+function getDirection(keys) {
+    dir = new Phaser.Point(0, 0);
+    if(keys.left.isDown) {
+        dir.x -= 1;
+    }
+    if(keys.right.isDown) {
+        dir.x += 1;
+    }
+    if(keys.up.isDown) {
+        dir.y -= 1;
+    }
+    if(keys.down.isDown) {
+        dir.y += 1;
+    }
+
+    return dir.normalize();
+}
+
+function createWASDKeys(keyboard){
+    return {
+        up: keyboard.addKey(Phaser.Keyboard.W),
+        down: keyboard.addKey(Phaser.Keyboard.S),
+        left: keyboard.addKey(Phaser.Keyboard.A),
+        right: keyboard.addKey(Phaser.Keyboard.D),
+    };
+}
+
+function getGravity(src, tgt) {
+
+    disp = Phaser.Point.subtract(src, tgt);
+    distSq = disp.getMagnitudeSq();
+    dir = disp.normalize();
+
+    mag = 5000000.0 / distSq;
+
+    grav = dir.multiply(mag, mag);
+    //console.log("gravity", grav.x, grav.y);
+    return grav;
+}
+
+</script>
+</body>
+
