@@ -36,14 +36,14 @@ function create() {
     ball.body.bounce = new Phaser.Point(0.0, 1.0);
     ball.body.maxVelocity = new Phaser.Point(1000., 1000.);
 
-    p1Keys = game.input.keyboard.createCursorKeys();
-    p2Keys = createWASDKeys(game.input.keyboard);
+    p1Keys = createWASDKeys(game.input.keyboard);
+    p2Keys = game.input.keyboard.createCursorKeys();
 }
 
 function update() {
 
-    p1.body.velocity = getDirection(p1Keys).multiply(150, 150);
-    p2.body.velocity = getDirection(p2Keys).multiply(150, 150);
+    p1.body.velocity = getDirection(p1Keys).multiply(300, 300);
+    p2.body.velocity = getDirection(p2Keys).multiply(300, 300);
 
     var g1 = getGravity(p1.body.position, ball.body.position);
     var g2 = getGravity(p2.body.position, ball.body.position);
@@ -81,9 +81,10 @@ function getGravity(src, tgt) {
 
     disp = Phaser.Point.subtract(src, tgt);
     distSq = disp.getMagnitudeSq();
+    distSq = Math.max(distSq, 1600);
     dir = disp.normalize();
 
-    mag = 5000000.0 / distSq;
+    mag = 20000000.0 / distSq;
 
     grav = dir.multiply(mag, mag);
     //console.log("gravity", grav.x, grav.y);
