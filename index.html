@@ -12,6 +12,7 @@ function preload() {
     game.load.image('p1', 'assets/p1.png');
     game.load.image('p2', 'assets/p2.png');
     game.load.image('ball', 'assets/ball.png');
+    //game.load.image('border', 'assets/border.png');
 }
 
 var p1;
@@ -19,13 +20,18 @@ var p2;
 var ball;
 var p1Keys;
 var p2Keys;
+var p1Score;
+var p2Score;
+var p1ScoreDisplay;
+var p2ScoreDisplay;
+var enableScoring;
 
 function create() {
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
-    p1 = game.add.sprite(game.world.width/4, game.world.height/2, 'p1');
-    p2 = game.add.sprite(3 * game.world.width/4, game.world.height/2, 'p2');
-    ball = game.add.sprite(game.world.width/2, game.world.height/2, 'ball');
+    p1 = game.add.sprite(0, 0, 'p1');
+    p2 = game.add.sprite(0, 0, 'p2');
+    ball = game.add.sprite(0, 0, 'ball');
     game.physics.arcade.enable(p1);
     game.physics.arcade.enable(p2);
     game.physics.arcade.enable(ball);
@@ -38,16 +44,53 @@ function create() {
 
     p1Keys = createWASDKeys(game.input.keyboard);
     p2Keys = game.input.keyboard.createCursorKeys();
+
+    p1Score = 0;
+    p2Score = 0;
+    var style = {font: "30px Arial", fill: "#ffffff"};
+    p1ScoreDisplay = game.add.text(20, 20, "0", style);
+    p2ScoreDisplay = game.add.text(game.world.width - 40, 20, "0", style);
+
+    startRound();
+}
+
+function startRound() {
+	enableScoring = true;
+	p1.reset(game.world.width/4, game.world.height/2);
+	p2.reset(3 * game.world.width/4, game.world.height/2);
+	ball.reset(game.world.width/2, game.world.height/2);
+	ball.body.gravity.setTo(0,0);
+}
+
+function endRound() {
+	enableScoring = false;
+	ball.kill();
+	game.time.events.add(Phaser.Timer.SECOND * 2, startRound);
 }
 
 function update() {
 
-    p1.body.velocity = getDirection(p1Keys).multiply(300, 300);
-    p2.body.velocity = getDirection(p2Keys).multiply(300, 300);
+	var playerSpeed = 400;
+
+    p1.body.velocity = getDirection(p1Keys).multiply(playerSpeed, playerSpeed);
+    p2.body.velocity = getDirection(p2Keys).multiply(playerSpeed, playerSpeed);
 
     var g1 = getGravity(p1.body.position, ball.body.position);
     var g2 = getGravity(p2.body.position, ball.body.position);
     ball.body.gravity = Phaser.Point.add(g1, g2);
+
+    if (enableScoring) {
+	    if(ball.body.blocked.left) {
+	    	p2Score += 1;
+	    	p2ScoreDisplay.text = p2Score;
+	    	endRound();
+	    }
+	    if(ball.body.blocked.right) {
+	    	p1Score += 1;
+	    	p1ScoreDisplay.text = p1Score;
+	    	endRound();
+	    }
+	}
 }
 
 function getDirection(keys) {
